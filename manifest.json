@@ -2,10 +2,11 @@
   "name": "daily.flow",
   "short_name": "daily.flow",
   "description": "A daily planning flow for night shift workers and people with ADHD",
-  "start_url": "/",
+  "start_url": "/daily-flow/",
   "display": "standalone",
   "background_color": "#0e0e10",
   "theme_color": "#0e0e10",
+  "scope": "/daily-flow/",
   "orientation": "portrait",
   "icons": [
     {
