@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0e0e10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="daily.flow">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>daily.flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0e10; --surf:#17171a; --surf2:#1e1e23; --bdr:#2a2a30;
+  --tx:#f0eff4; --mu:#7b7a85; --ac:#f5a623;
+  --am:#f5a623; --ao:#7c6af7; --ad:#3ecf8e; --ae:#e8607a; --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-height:100dvh;display:flex;justify-content:center;}
+#app{width:100%;max-width:480px;min-height:100dvh;display:flex;flex-direction:column;}
+
+.hdr{padding:52px 24px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.5px;}
+.logo em{color:var(--ac);font-style:normal;}
+.hbtns{display:flex;gap:8px;}
+.hbtn{width:40px;height:40px;border-radius:12px;background:var(--surf);border:1px solid var(--bdr);color:var(--tx);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;text-decoration:none;font-family:inherit;}
+.hbtn:active{transform:scale(.92);background:var(--surf2);}
+.hbtn.hide{opacity:0;pointer-events:none;}
+
+.prog{padding:0 24px 4px;flex-shrink:0;}
+.prog-track{height:3px;background:var(--surf2);border-radius:99px;overflow:hidden;opacity:0;transition:opacity .3s;}
+.prog-track.on{opacity:1;}
+.prog-fill{height:100%;background:var(--ac);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1);width:0%;}
+
+.body{flex:1;padding:0 24px 48px;display:flex;flex-direction:column;overflow-y:auto;}
+.scr{display:none;flex-direction:column;flex:1;animation:up .3s cubic-bezier(.25,.46,.45,.94) both;}
+.scr.on{display:flex;}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* HOME */
+.greet{padding:20px 0 6px;}
+.glbl{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mu);margin-bottom:8px;}
+.ghed{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;line-height:1.1;letter-spacing:-1px;margin-bottom:4px;}
+.gsub{color:var(--mu);font-size:14px;line-height:1.5;margin-bottom:24px;}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:18px 15px;cursor:pointer;transition:all .18s ease;display:flex;flex-direction:column;gap:9px;justify-content:space-between;min-height:124px;position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;border-radius:inherit;}
+.mc[data-m=morning]::before{background:radial-gradient(ellipse at top left,rgba(245,166,35,.14),transparent 65%);}
+.mc[data-m=overwhelmed]::before{background:radial-gradient(ellipse at top left,rgba(124,106,247,.14),transparent 65%);}
+.mc[data-m=midday]::before{background:radial-gradient(ellipse at top left,rgba(62,207,142,.14),transparent 65%);}
+.mc[data-m=evening]::before{background:radial-gradient(ellipse at top left,rgba(232,96,122,.14),transparent 65%);}
+.mc[data-m=aftershift]::before{background:radial-gradient(ellipse at top left,rgba(232,96,122,.14),transparent 65%);}
+.mc[data-m=flip]::before{background:radial-gradient(ellipse at top left,rgba(124,106,247,.14),transparent 65%);}
+.mc:active{transform:scale(.95);}.mc:active::before{opacity:1;}
+.memi{font-size:24px;}
+.mlbl{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;line-height:1.2;letter-spacing:-.2px;}
+.mdot{width:7px;height:7px;border-radius:50%;margin-top:3px;}
+.mc[data-m=morning] .mdot{background:var(--am);}
+.mc[data-m=overwhelmed] .mdot{background:var(--ao);}
+.mc[data-m=midday] .mdot{background:var(--ad);}
+.mc[data-m=evening] .mdot{background:var(--ae);}
+.mc[data-m=aftershift] .mdot{background:var(--ae);}
+.mc[data-m=flip] .mdot{background:var(--ao);}
+.srow{display:flex;gap:8px;margin-top:16px;}
+.spill{background:var(--surf);border:1px solid var(--bdr);border-radius:99px;padding:8px 14px;font-size:12px;font-weight:500;color:var(--mu);display:flex;align-items:center;gap:6px;cursor:pointer;flex:1;justify-content:center;transition:all .15s;}
+.spill:active{background:var(--surf2);}
+.scnt{color:var(--tx);font-weight:700;}
+.setup-banner{margin-top:14px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:14px;padding:13px 15px;display:flex;gap:10px;align-items:flex-start;cursor:pointer;}
+.setup-banner.hide{display:none;}
+.sb-icon{font-size:17px;flex-shrink:0;}
+.sb-txt{font-size:13px;line-height:1.55;color:var(--mu);}
+.sb-txt strong{color:var(--am);font-weight:600;}
+
+/* QUESTION */
+.qctx{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;margin:22px 0 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.qdot{width:7px;height:7px;border-radius:50%;}
+.qtxt{font-family:'Syne',sans-serif;font-weight:700;font-size:24px;line-height:1.2;letter-spacing:-.6px;margin-bottom:7px;flex-shrink:0;}
+.qsub{color:var(--mu);font-size:14px;line-height:1.55;margin-bottom:24px;flex-shrink:0;}
+.choices{display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-bottom:4px;}
+.cbtn{background:var(--surf);border:1.5px solid var(--bdr);border-radius:15px;padding:18px 19px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s ease;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;}
+.cbtn::after{content:'→';font-size:16px;opacity:.3;transition:all .15s;}
+.cbtn:active{transform:scale(.97);border-color:var(--ac);background:var(--surf2);}
+.cbtn:active::after{opacity:1;transform:translateX(3px);}
+.cbtn.yes{border-color:rgba(62,207,142,.3);}
+.cbtn.no{border-color:rgba(232,96,122,.25);}
+
+/* RESULT */
+.rtop{padding-top:22px;flex-shrink:0;}
+.rbadge{display:inline-flex;align-items:center;gap:6px;background:var(--surf);border:1px solid var(--bdr);border-radius:99px;padding:5px 12px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--mu);margin-bottom:14px;}
+.slbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:9px;}
+.fcard{background:var(--surf);border:1.5px solid var(--ac);border-radius:var(--r);padding:18px 17px;margin-bottom:18px;position:relative;overflow:hidden;}
+.fcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac);opacity:.5;}
+.ftxt{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;line-height:1.25;letter-spacing:-.4px;margin-bottom:6px;}
+.fwhy{color:var(--mu);font-size:13px;line-height:1.55;}
+
+.ltarget{display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--surf2);border:1px solid var(--bdr);border-radius:9px;margin-bottom:12px;font-size:12px;color:var(--mu);cursor:pointer;}
+.ltarget:active{background:var(--surf);}
+.ltdot{width:6px;height:6px;border-radius:50%;background:var(--ac);flex-shrink:0;}
+.ltarget span{color:var(--tx);font-weight:600;}
+
+.tlist{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.titem{background:var(--surf);border:1px solid var(--bdr);border-radius:13px;padding:13px 15px;display:flex;align-items:flex-start;gap:12px;transition:all .14s;}
+.titem.sent{border-color:rgba(245,166,35,.3);background:rgba(245,166,35,.04);}
+.titem.done .tname{text-decoration:line-through;color:var(--mu);}
+.titem.done .tchk{background:var(--ad);border-color:var(--ad);color:#0e0e10;}
+.tleft{display:flex;flex-direction:column;flex:1;gap:2px;}
+.tname{font-size:14px;font-weight:500;line-height:1.4;}
+.ttag{font-size:11px;color:var(--mu);}
+.tchk{width:21px;height:21px;border-radius:6px;border:2px solid var(--bdr);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.tadd{flex-shrink:0;background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;padding:5px 9px;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;margin-top:1px;letter-spacing:.02em;transition:all .15s;-webkit-tap-highlight-color:rgba(245,166,35,.2);}
+.tadd:active{background:var(--ac);color:#0e0e10;border-color:var(--ac);}
+.titem.sent .tadd{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.3);color:var(--ac);pointer-events:none;}
+
+.tip-card{background:var(--surf);border:1px solid var(--bdr);border-radius:13px;padding:13px 15px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;}
+.tip-icon{font-size:17px;flex-shrink:0;}
+.tip-txt{font-size:13px;color:var(--mu);line-height:1.55;}
+.tip-txt strong{color:var(--tx);font-weight:500;}
+.rbtn{background:var(--surf2);border:1.5px solid var(--bdr);border-radius:15px;padding:16px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;width:100%;text-align:center;transition:all .15s;margin-bottom:12px;}
+.rbtn:active{transform:scale(.97);}
+.edit-tasks-btn{background:transparent;border:1.5px solid var(--bdr);border-radius:15px;padding:14px;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;width:100%;text-align:center;transition:all .15s;margin-bottom:28px;}
+.edit-tasks-btn:active{border-color:var(--ac);color:var(--ac);}
+
+/* PANELS */
+.ovr{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px);}
+.ovr.on{opacity:1;pointer-events:all;}
+.panel{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(102%);width:100%;max-width:480px;background:var(--surf);border-radius:22px 22px 0 0;border-top:1px solid var(--bdr);padding:18px 24px 52px;z-index:101;transition:transform .3s cubic-bezier(.25,.46,.45,.94);max-height:90dvh;overflow-y:auto;}
+.panel.on{transform:translateX(-50%) translateY(0);}
+.phandle{width:34px;height:4px;background:var(--bdr);border-radius:99px;margin:0 auto 20px;}
+.ptitle{font-family:'Syne',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.4px;margin-bottom:6px;}
+.psub{font-size:13px;color:var(--mu);line-height:1.55;margin-bottom:20px;}
+.flbl{font-size:12px;font-weight:600;color:var(--mu);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;}
+.frow{display:flex;gap:10px;margin-bottom:18px;}
+.finp{flex:1;background:var(--surf2);border:1px solid var(--bdr);border-radius:11px;padding:13px 15px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .15s;}
+.finp:focus{border-color:var(--ac);}
+.finp::placeholder{color:var(--mu);}
+.savebtn{background:var(--ac);border:none;border-radius:11px;padding:13px 17px;color:#0e0e10;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.savebtn:active{transform:scale(.96);}
+.steps{display:flex;flex-direction:column;}
+.step{display:flex;gap:13px;padding:13px 0;border-bottom:1px solid var(--bdr);align-items:flex-start;}
+.step:last-child{border-bottom:none;}
+.snum{width:24px;height:24px;border-radius:50%;background:var(--surf2);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ac);flex-shrink:0;margin-top:1px;}
+.stxt{font-size:13px;color:var(--mu);line-height:1.6;}
+.stxt strong{color:var(--tx);font-weight:500;}
+.test-link{display:flex;align-items:center;justify-content:center;width:100%;background:var(--surf2);border:1.5px solid var(--bdr);border-radius:13px;padding:15px 17px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;transition:all .15s;margin-top:14px;-webkit-tap-highlight-color:rgba(245,166,35,.2);}
+.test-link:active{border-color:var(--ac);color:var(--ac);}
+
+/* EDIT TASKS PANEL */
+.outcome-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.otab{padding:7px 13px;border-radius:99px;font-size:12px;font-weight:600;background:var(--surf2);border:1.5px solid var(--bdr);color:var(--mu);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.otab.active{background:var(--ac);border-color:var(--ac);color:#0e0e10;}
+.otab:active{transform:scale(.95);}
+.edit-task-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.edit-task-row{display:flex;gap:8px;align-items:center;}
+.edit-task-input{flex:1;background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;padding:11px 13px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s;}
+.edit-task-input:focus{border-color:var(--ac);}
+.edit-del-btn{width:32px;height:32px;border-radius:8px;background:transparent;border:1px solid var(--bdr);color:var(--mu);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.edit-del-btn:active{background:rgba(232,96,122,.15);border-color:var(--ae);color:var(--ae);}
+.add-task-btn{width:100%;background:var(--surf2);border:1.5px dashed var(--bdr);border-radius:11px;padding:13px;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all .15s;margin-bottom:16px;}
+.add-task-btn:active{border-color:var(--ac);color:var(--ac);}
+.save-tasks-btn{width:100%;background:var(--ac);border:none;border-radius:14px;padding:16px;color:#0e0e10;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;}
+.save-tasks-btn:active{transform:scale(.97);}
+.reset-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--mu);cursor:pointer;text-decoration:none;}
+.reset-link:active{color:var(--ae);}
+
+/* SETUP WIZARD */
+.wizard-step{display:none;flex-direction:column;flex:1;}
+.wizard-step.on{display:flex;}
+.whed{font-family:'Syne',sans-serif;font-weight:700;font-size:22px;line-height:1.2;letter-spacing:-.5px;margin-bottom:8px;}
+.wsub{color:var(--mu);font-size:14px;line-height:1.55;margin-bottom:24px;}
+.wtextarea{width:100%;background:var(--surf2);border:1px solid var(--bdr);border-radius:13px;padding:15px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;outline:none;resize:none;min-height:120px;transition:border-color .15s;margin-bottom:16px;}
+.wtextarea:focus{border-color:var(--ac);}
+.wtextarea::placeholder{color:var(--mu);}
+.wnext{width:100%;background:var(--ac);border:none;border-radius:14px;padding:17px;color:#0e0e10;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:auto;}
+.wnext:active{transform:scale(.97);}
+.wskip{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--mu);cursor:pointer;}
+.wskip:active{color:var(--ac);}
+.tag-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.tag-chip{padding:9px 16px;border-radius:99px;font-size:13px;font-weight:500;background:var(--surf);border:1.5px solid var(--bdr);color:var(--mu);cursor:pointer;transition:all .15s;}
+.tag-chip.sel{background:var(--ac);border-color:var(--ac);color:#0e0e10;}
+.tag-chip:active{transform:scale(.95);}
+
+/* STATS */
+.hmlbl{font-size:11px;color:var(--mu);margin-bottom:9px;letter-spacing:.06em;text-transform:uppercase;}
+.hmap{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:18px;}
+.hcell{aspect-ratio:1;border-radius:5px;background:var(--surf2);}
+.hcell.l1{background:rgba(245,166,35,.25);}.hcell.l2{background:rgba(245,166,35,.55);}.hcell.l3{background:rgba(245,166,35,.85);}
+.prow{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--bdr);}
+.prow:last-child{border-bottom:none;}
+.plbl{color:var(--mu);font-size:13px;} .pval{font-weight:600;font-size:14px;}
+.mbreak{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+.mchip{padding:5px 11px;border-radius:99px;font-size:12px;font-weight:600;background:var(--surf2);border:1px solid var(--bdr);}
+
+/* TOAST */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--surf2);border:1px solid var(--bdr);border-radius:99px;padding:10px 17px;font-size:13px;font-weight:500;z-index:200;opacity:0;transition:all .25s ease;white-space:nowrap;max-width:calc(100vw - 48px);text-align:center;pointer-events:none;}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.ok{border-color:rgba(62,207,142,.4);color:var(--ad);}
+.toast.err{border-color:rgba(232,96,122,.4);color:var(--ae);}
+
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;opacity:.14;}
+.o1{width:280px;height:280px;background:var(--ac);top:-70px;right:-70px;}
+.o2{width:170px;height:170px;background:var(--ao);bottom:15%;left:-45px;}
+#app>*{position:relative;z-index:1;}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<div id="app">
+
+  <div class="hdr">
+    <div class="logo">daily<em>.</em>flow</div>
+    <div class="hbtns">
+      <button class="hbtn hide" id="backBtn" onclick="goBack()">←</button>
+      <button class="hbtn" onclick="openStats()">📊</button>
+      <button class="hbtn" onclick="openList()">🎯</button>
+    </div>
+  </div>
+  <div class="prog"><div class="prog-track" id="PT"><div class="prog-fill" id="PF"></div></div></div>
+
+  <div class="body">
+
+    <!-- HOME -->
+    <div class="scr on" id="s-home">
+      <div class="greet">
+        <div class="glbl">Ready when you are</div>
+        <div class="ghed" id="greetTxt">Hey.</div>
+        <div class="gsub" id="greetSub">What's your situation right now?</div>
+      </div>
+      <div class="mgrid">
+        <div class="mc" data-m="morning"     onclick="startFlow('morning')"><div class="memi">🌅</div><div><div class="mlbl">Just Woke Up</div><div class="mdot"></div></div></div>
+        <div class="mc" data-m="aftershift"  onclick="startFlow('aftershift')"><div class="memi">🌙</div><div><div class="mlbl">Just Finished a Night Shift</div><div class="mdot"></div></div></div>
+        <div class="mc" data-m="flip"        onclick="startFlow('flip')"><div class="memi">🌀</div><div><div class="mlbl">Completely Disoriented</div><div class="mdot"></div></div></div>
+        <div class="mc" data-m="overwhelmed" onclick="startFlow('overwhelmed')"><div class="memi">😶</div><div><div class="mlbl">Empty / Can't Start</div><div class="mdot"></div></div></div>
+        <div class="mc" data-m="midday"      onclick="startFlow('midday')"><div class="memi">☀️</div><div><div class="mlbl">Mid-day Check-in</div><div class="mdot"></div></div></div>
+        <div class="mc" data-m="evening"     onclick="startFlow('evening')"><div class="memi">🌆</div><div><div class="mlbl">Winding Down</div><div class="mdot"></div></div></div>
+      </div>
+      <div class="srow">
+        <div class="spill" onclick="openStats()">🔥 <span id="streakN" class="scnt">0</span> day streak</div>
+        <div class="spill" onclick="openStats()">📋 <span id="totalN"  class="scnt">0</span> sessions</div>
+      </div>
+      <div class="setup-banner hide" id="setupBanner" onclick="openList()">
+        <div class="sb-icon">🎯</div>
+        <div class="sb-txt"><strong>Connect your TODAY list →</strong><br>Tap to link tasks to a specific LifeUp list.</div>
+      </div>
+    </div>
+
+    <!-- QUESTION -->
+    <div class="scr" id="s-question">
+      <div class="qctx"><div class="qdot" id="qDot"></div><span id="qCtx"></span></div>
+      <div class="qtxt" id="qTxt"></div>
+      <div class="qsub" id="qSub"></div>
+      <div class="choices" id="choices"></div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="scr" id="s-result">
+      <div class="rtop">
+        <div class="rbadge"><span id="rEmoji">✦</span>&nbsp;<span id="rBadge"></span></div>
+        <div class="slbl">ONE THING TO START WITH</div>
+        <div class="fcard">
+          <div class="ftxt" id="fTxt"></div>
+          <div class="fwhy" id="fWhy"></div>
+        </div>
+        <div class="slbl">TASKS FOR RIGHT NOW</div>
+        <div class="ltarget" onclick="openList()">
+          <div class="ltdot"></div>
+          Adding to: <span id="ltLbl">default list</span>&nbsp;·&nbsp;<span style="color:var(--mu);font-size:11px">change →</span>
+        </div>
+        <div class="tlist" id="tList"></div>
+        <div class="tip-card"><div class="tip-icon">💡</div><div class="tip-txt" id="tipTxt"></div></div>
+        <button class="rbtn" onclick="goHome()">← Start over</button>
+        <button class="edit-tasks-btn" id="editTasksBtn" onclick="openEditTasks()">✏️ Personalise these tasks</button>
+      </div>
+    </div>
+
+    <!-- SETUP WIZARD -->
+    <div class="scr" id="s-setup">
+      <div style="padding-top:24px;flex:1;display:flex;flex-direction:column;">
+        <div class="rbadge" style="margin-bottom:20px;">✦&nbsp;First time setup</div>
+
+        <!-- Step 1: anchors -->
+        <div class="wizard-step on" id="ws-1">
+          <div class="whed">What are your physical anchors?</div>
+          <div class="wsub">Small things that make you feel slightly more human. Could be anything — coffee, music, a specific show, stepping outside, a shower. No judgment, no "healthy" requirement.</div>
+          <textarea class="wtextarea" id="w-anchors" placeholder="e.g. coffee, hot shower, stepping outside for 2 min, putting music on..."></textarea>
+          <button class="wnext" onclick="wizardNext(2)">Next →</button>
+          <span class="wskip" onclick="wizardSkip()">Skip setup, use defaults</span>
+        </div>
+
+        <!-- Step 2: blockers -->
+        <div class="wizard-step" id="ws-2">
+          <div class="whed">What reliably makes things worse?</div>
+          <div class="wsub">We already know doomscrolling is one. Any others? These will be added as "avoid" tasks on your worst-state days.</div>
+          <textarea class="wtextarea" id="w-blockers" placeholder="e.g. doomscrolling, skipping food, isolating, drinking energy drinks..."></textarea>
+          <button class="wnext" onclick="wizardNext(3)">Next →</button>
+          <span class="wskip" onclick="wizardSkip()">Skip</span>
+        </div>
+
+        <!-- Step 3: non-negotiables -->
+        <div class="wizard-step" id="ws-3">
+          <div class="whed">Any non-negotiables?</div>
+          <div class="wsub">Things you know you need to do regularly even if you don't want to — medication, food, movement, hydration, anything you keep forgetting.</div>
+          <textarea class="wtextarea" id="w-nonneg" placeholder="e.g. eat at least one meal, drink water, take meds, move my body somehow..."></textarea>
+          <button class="wnext" onclick="wizardNext(4)">Next →</button>
+          <span class="wskip" onclick="wizardSkip()">Skip</span>
+        </div>
+
+        <!-- Step 4: what helps sleep after shift -->
+        <div class="wizard-step" id="ws-4">
+          <div class="whed">After a night shift, what helps you actually sleep?</div>
+          <div class="wsub">Even if you're not sure — anything you've noticed, been told, or want to try. This builds your post-shift wind-down tasks.</div>
+          <div class="tag-grid" id="sleepTags">
+            <div class="tag-chip" data-v="blackout curtains">Blackout curtains</div>
+            <div class="tag-chip" data-v="avoid screens">Avoid screens</div>
+            <div class="tag-chip" data-v="cold dark room">Cold dark room</div>
+            <div class="tag-chip" data-v="white noise">White noise</div>
+            <div class="tag-chip" data-v="eat before sleep">Eat before sleeping</div>
+            <div class="tag-chip" data-v="shower first">Shower first</div>
+            <div class="tag-chip" data-v="avoid caffeine">Avoid caffeine</div>
+            <div class="tag-chip" data-v="light stretching">Light stretching</div>
+            <div class="tag-chip" data-v="nothing works">Nothing works for me</div>
+          </div>
+          <button class="wnext" onclick="wizardFinish()">Done — build my tasks →</button>
+          <span class="wskip" onclick="wizardSkip()">Skip</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LIST PANEL -->
+<div class="ovr" id="listOvr" onclick="closeList()"></div>
+<div class="panel" id="listPanel">
+  <div class="phandle"></div>
+  <div class="ptitle">🎯 LifeUp List</div>
+  <div class="psub">Set which LifeUp list tasks are added to. Leave blank for the default list.</div>
+  <div class="flbl">List ID</div>
+  <div class="frow">
+    <input class="finp" id="catInput" type="number" inputmode="numeric" placeholder="e.g. 2  (blank = default)">
+    <button class="savebtn" onclick="saveList()">Save</button>
+  </div>
+  <div class="flbl" style="margin-bottom:12px">How to find your List ID</div>
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="stxt">Open <strong>LifeUp → Settings → Labs → Developer Mode on</strong></div></div>
+    <div class="step"><div class="snum">2</div><div class="stxt">Open your target list → tap <strong>⋮ menu</strong> → note the <strong>List ID</strong></div></div>
+    <div class="step"><div class="snum">3</div><div class="stxt">Enter it above, tap <strong>Save</strong>, then test below</div></div>
+  </div>
+  <a class="test-link" id="testLink" href="#">🧪 Tap to send a test task to LifeUp</a>
+
+</div>
+
+<!-- EDIT TASKS PANEL -->
+<div class="ovr" id="editOvr" onclick="closeEditTasks()"></div>
+<div class="panel" id="editPanel">
+  <div class="phandle"></div>
+  <div class="ptitle">✏️ Personalise Tasks</div>
+  <div class="psub">Edit tasks for each situation. Changes are saved to your device.</div>
+  <div class="outcome-tabs" id="outcomeTabs"></div>
+  <div class="edit-task-list" id="editTaskList"></div>
+  <button class="add-task-btn" onclick="addEditTask()">+ Add a task</button>
+  <button class="save-tasks-btn" onclick="saveEditedTasks()">Save tasks</button>
+  <span class="reset-link" onclick="resetOutcomeTasks()">Reset to defaults for this situation</span>
+</div>
+
+<!-- STATS PANEL -->
+<div class="ovr" id="statsOvr" onclick="closeStats()"></div>
+<div class="panel" id="statsPanel">
+  <div class="phandle"></div>
+  <div class="ptitle">📊 Your Patterns</div>
+  <div class="hmlbl">Last 28 days</div>
+  <div class="hmap" id="hmap"></div>
+  <div id="patRows"></div>
+  <div class="hmlbl" style="margin-top:16px">Sessions by mode</div>
+  <div class="mbreak" id="mbreak"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────
+// FLOW DATA — night shift aware
+// ─────────────────────────────────────
+const FLOWS = {
+  morning:{color:'#f5a623',label:'Just Woke Up',start:'slept',nodes:{
+    slept:{q:"How did you sleep?",sub:"Be honest — this shapes everything.",ch:[
+      {l:"Properly, 7+ hours",n:'eaten'},
+      {l:"A bit, not enough",n:'eaten'},
+      {l:"Barely at all",n:'result',r:'morning_nosleep'}
+    ]},
+    eaten:{q:"Have you had water or food yet?",sub:"Before anything else.",ch:[
+      {l:"Yes, sorted",n:'noise'},
+      {l:"Not yet",n:'result',r:'morning_fuel_first'}
+    ]},
+    noise:{q:"How's your head right now?",sub:"Mental noise, anxiety, that background hum.",ch:[
+      {l:"Pretty clear",n:'result',r:'morning_focused'},
+      {l:"Noisy / anxious",n:'result',r:'morning_settle_first'}
+    ]}
+  }},
+  aftershift:{color:'#e8607a',label:'After Night Shift',start:'howlong',nodes:{
+    howlong:{q:"How long was the shift?",sub:"This affects how your body needs to wind down.",ch:[
+      {l:"Standard — 8 to 10 hours",n:'sleepy'},
+      {l:"Long — over 10 hours",n:'result',r:'aftershift_long'}
+    ]},
+    sleepy:{q:"How sleepy do you actually feel?",sub:"Ignore what time it is — just your body.",ch:[
+      {l:"Exhausted, want to sleep now",n:'result',r:'aftershift_sleep_now'},
+      {l:"Wired, can't switch off",n:'result',r:'aftershift_wired'}
+    ]}
+  }},
+  flip:{color:'#7c6af7',label:'Completely Disoriented',start:'howbad',nodes:{
+    howbad:{q:"How empty are you feeling right now?",sub:"No judgment — just being honest helps.",ch:[
+      {l:"A bit lost but okay",n:'result',r:'flip_mild'},
+      {l:"Complete emptiness",n:'anchor'},
+      {l:"Empty and anxiety is building",n:'result',r:'flip_anxiety'}
+    ]},
+    anchor:{q:"Is there anything nearby that normally helps even slightly?",sub:"Music, food, fresh air, anything at all.",ch:[
+      {l:"Yes, I can do that",n:'result',r:'flip_anchor'},
+      {l:"No idea what would help",n:'result',r:'flip_nothing'}
+    ]}
+  }},
+  overwhelmed:{color:'#7c6af7',label:'Empty / Can\'t Start',start:'type',nodes:{
+    type:{q:"What's the feeling most like?",sub:"Name it as close as you can.",ch:[
+      {l:"Too much to do, paralysed",n:'result',r:'overwhelmed_triage'},
+      {l:"Nothing to do but can't move",n:'result',r:'overwhelmed_empty'},
+      {l:"Doomscrolling / stuck in a loop",n:'result',r:'overwhelmed_scroll'},
+      {l:"Emotionally drained",n:'result',r:'overwhelmed_restore'}
+    ]}
+  }},
+  midday:{color:'#3ecf8e',label:'Mid-day Check-in',start:'momentum',nodes:{
+    momentum:{q:"How has it gone so far?",sub:"Relative to what you hoped.",ch:[
+      {l:"Got some things done",n:'energy_mid'},
+      {l:"Got completely off track",n:'derailed'}
+    ]},
+    energy_mid:{q:"How's your energy for the rest of the day?",sub:"Be realistic.",ch:[
+      {l:"Still got fuel",n:'result',r:'midday_keep_going'},
+      {l:"Running low",n:'result',r:'midday_triage_afternoon'}
+    ]},
+    derailed:{q:"What knocked you off track?",sub:"No shame — this is just info.",ch:[
+      {l:"Distractions / interruptions",n:'result',r:'midday_refocus'},
+      {l:"Couldn't start anything",n:'result',r:'midday_reset'}
+    ]}
+  }},
+  evening:{color:'#e8607a',label:'Winding Down',start:'done',nodes:{
+    done:{q:"Did you do at least one meaningful thing today?",sub:"One is genuinely enough.",ch:[
+      {l:"Yes, at least one",n:'stress'},
+      {l:"Not really",n:'compassion'}
+    ]},
+    compassion:{q:"Did you show up and try, even if it was messy?",sub:"Trying counts.",ch:[
+      {l:"Yeah, I tried",n:'stress'},
+      {l:"Today was genuinely hard",n:'result',r:'evening_hard_day'}
+    ]},
+    stress:{q:"How's your body feeling going into tonight?",sub:"Wired, calm, or somewhere in between.",ch:[
+      {l:"Calm, winding down naturally",n:'result',r:'evening_good_shutdown'},
+      {l:"Still wired / can't switch off",n:'result',r:'evening_decompress'}
+    ]}
+  }}
+};
+
+// ─────────────────────────────────────
+// DEFAULT TASKS PER OUTCOME
+// ─────────────────────────────────────
+const DEFAULT_TASKS = {
+  morning_nosleep:[
+    {n:'Drink a full glass of water immediately',g:'body'},
+    {n:'Eat something — anything at all',g:'body'},
+    {n:'Write down just ONE thing that needs to happen today',g:'clarity'},
+    {n:'Phone face down, no social media for 30 minutes',g:'protect'},
+    {n:'Sit outside or near a window for 5 minutes',g:'body'}
+  ],
+  morning_fuel_first:[
+    {n:'Eat or drink something before anything else',g:'body'},
+    {n:'Drink a glass of water',g:'body'},
+    {n:'Write your top 3 things for today',g:'planning'},
+    {n:'Pick just the first one and start it',g:'focus'}
+  ],
+  morning_focused:[
+    {n:'Identify your most important task right now',g:'planning'},
+    {n:'Set a 45-minute focus timer',g:'focus'},
+    {n:'Phone on DND, notifications off',g:'focus'},
+    {n:'Take a proper break after the timer ends',g:'body'},
+    {n:'Do one small easy task after the break',g:'momentum'}
+  ],
+  morning_settle_first:[
+    {n:'Brain dump — write everything on your mind for 5 minutes',g:'clarity'},
+    {n:'Pick only 2 tasks from that list',g:'planning'},
+    {n:'Drink water',g:'body'},
+    {n:'10-minute walk if possible',g:'body'},
+    {n:'Start your first task with a timer',g:'focus'}
+  ],
+  aftershift_long:[
+    {n:'Drink water before you sleep',g:'body'},
+    {n:'Eat something light',g:'body'},
+    {n:'Blackout curtains or eye mask on',g:'sleep'},
+    {n:'Phone on silent, away from the bed',g:'sleep'},
+    {n:'Do not set an alarm unless absolutely necessary',g:'sleep'}
+  ],
+  aftershift_sleep_now:[
+    {n:'Drink a glass of water',g:'body'},
+    {n:'Blackout curtains or eye mask',g:'sleep'},
+    {n:'Phone on silent and face down',g:'sleep'},
+    {n:'Cool the room down if you can',g:'sleep'},
+    {n:'Don\'t check the time once you\'re in bed',g:'sleep'}
+  ],
+  aftershift_wired:[
+    {n:'Do NOT get on your phone — this will extend the wired state',g:'protect'},
+    {n:'Eat something small',g:'body'},
+    {n:'Take a warm shower — it lowers core body temperature after',g:'body'},
+    {n:'Dim all lights in your space',g:'sleep'},
+    {n:'Put on something low-stimulation — podcast, rain sounds, quiet music',g:'sleep'},
+    {n:'Lie down even if you don\'t feel tired — your body will catch up',g:'sleep'}
+  ],
+  flip_mild:[
+    {n:'Acknowledge that disorientation is normal for shift workers',g:'self-care'},
+    {n:'Drink water',g:'body'},
+    {n:'Eat something',g:'body'},
+    {n:'Check what time it actually is and work out if it\'s a sleep or wake cycle',g:'clarity'},
+    {n:'Pick one single thing to do in the next hour',g:'focus'}
+  ],
+  flip_anchor:[
+    {n:'Do your anchor thing — whatever it is, do it now',g:'anchor'},
+    {n:'Drink water while you do it',g:'body'},
+    {n:'After that, sit for 2 minutes and notice how you feel',g:'self-care'},
+    {n:'Pick just one task, no more',g:'focus'}
+  ],
+  flip_nothing:[
+    {n:'That\'s okay — start with the smallest possible physical thing',g:'body'},
+    {n:'Open a window or step outside for 60 seconds',g:'body'},
+    {n:'Drink something',g:'body'},
+    {n:'Put music on — something familiar',g:'anchor'},
+    {n:'Don\'t try to be productive yet — just exist for 20 minutes first',g:'self-care'}
+  ],
+  flip_anxiety:[
+    {n:'Phone face down, close social media',g:'protect'},
+    {n:'Breathe: 4 counts in, hold 4, out 6 — repeat 5 times',g:'body'},
+    {n:'Drink cold water',g:'body'},
+    {n:'Name 5 things you can physically see right now',g:'grounding'},
+    {n:'Send one message to someone you trust if the anxiety is building',g:'connection'}
+  ],
+  overwhelmed_triage:[
+    {n:'Write everything in your head onto paper — 5 minutes, no filter',g:'clarity'},
+    {n:'Mark each thing: must today / can wait / not actually my problem',g:'planning'},
+    {n:'Pick the single most important one',g:'focus'},
+    {n:'Start it with a 20-minute timer',g:'focus'}
+  ],
+  overwhelmed_empty:[
+    {n:'Don\'t fight the emptiness — acknowledge it\'s there',g:'self-care'},
+    {n:'Drink water',g:'body'},
+    {n:'Stand up and move to a different room or outside',g:'body'},
+    {n:'Put music on — something you actually like',g:'anchor'},
+    {n:'Find the single smallest possible task and do just 2 minutes of it',g:'momentum'}
+  ],
+  overwhelmed_scroll:[
+    {n:'Put the phone in another room right now — this is the one task',g:'protect'},
+    {n:'Drink water',g:'body'},
+    {n:'Take 5 deep breaths',g:'body'},
+    {n:'Write down one thing you\'ve been avoiding',g:'clarity'},
+    {n:'Set a 15-minute timer and just start that thing',g:'focus'}
+  ],
+  overwhelmed_restore:[
+    {n:'Stop trying to be productive — that\'s not what this is',g:'self-care'},
+    {n:'Step outside for 10 minutes, no phone',g:'body'},
+    {n:'Eat and drink something',g:'body'},
+    {n:'Do one small satisfying thing — make your bed, wash one dish, anything',g:'momentum'},
+    {n:'You showed up today. That counts.',g:'self-care'}
+  ],
+  midday_keep_going:[
+    {n:'Write 1-2 things you\'ve already done today',g:'review'},
+    {n:'Pick your #1 task for the rest of the day',g:'planning'},
+    {n:'Eat if you haven\'t',g:'body'},
+    {n:'90-minute focus block, then stop',g:'focus'}
+  ],
+  midday_triage_afternoon:[
+    {n:'Cross out everything non-essential from today',g:'planning'},
+    {n:'Keep only 2 tasks maximum',g:'planning'},
+    {n:'Eat and take a real break',g:'body'},
+    {n:'25-minute timer per task, no more',g:'focus'}
+  ],
+  midday_refocus:[
+    {n:'Phone in another room or on DND',g:'focus'},
+    {n:'Close every tab except the one you\'re working on',g:'focus'},
+    {n:'Pick one task and work on it for 30 minutes',g:'focus'},
+    {n:'Headphones with background noise if helpful',g:'focus'}
+  ],
+  midday_reset:[
+    {n:'Get up from wherever you are and move for 5 minutes',g:'body'},
+    {n:'Write down what\'s been blocking you',g:'clarity'},
+    {n:'Break the blocking thing into a 5-minute first step',g:'planning'},
+    {n:'Do only that first step — nothing else',g:'focus'}
+  ],
+  evening_good_shutdown:[
+    {n:'Write 1-3 things you actually did today',g:'review'},
+    {n:'Write tomorrow\'s top 3 tasks, then close the list',g:'planning'},
+    {n:'Close all work apps and tabs',g:'shutdown'},
+    {n:'Do something that doesn\'t require anything from you',g:'rest'}
+  ],
+  evening_decompress:[
+    {n:'Move your body for 10 minutes — walk, stretch, anything',g:'body'},
+    {n:'No social media or news for the rest of the night',g:'protect'},
+    {n:'Brain dump any lingering thoughts onto paper',g:'clarity'},
+    {n:'Write tomorrow\'s top 3 — then physically close the notebook or app',g:'planning'}
+  ],
+  evening_hard_day:[
+    {n:'Eat something warm if you can',g:'body'},
+    {n:'Do something that needs nothing from you',g:'rest'},
+    {n:'Write one thing — literally anything — that happened today',g:'self-care'},
+    {n:'Tomorrow is a completely separate day',g:'self-care'}
+  ]
+};
+
+// ─────────────────────────────────────
+// RESULT METADATA
+// ─────────────────────────────────────
+const RES_META = {
+  morning_nosleep:     {e:'😶',b:'Running on empty',    f:'The only job right now is to exist without making things worse', w:"No sleep means your brain is already stressed. The goal today is harm reduction — not productivity."},
+  morning_fuel_first:  {e:'🍳',b:'Fuel up first',       f:'Eat and drink water before you do anything else',               w:"Your brain literally can't regulate properly without food and water. Everything else comes after."},
+  morning_focused:     {e:'🎯',b:'Ready to go',         f:'Start with your hardest task while your brain is fresh',        w:"This is your peak window. Don't waste it on email or scrolling."},
+  morning_settle_first:{e:'🧘',b:'Settle first',        f:'Get the noise out of your head before you start anything',      w:"A brain dump takes 5 minutes and clears the path for everything else."},
+  aftershift_long:     {e:'🛏️',b:'Long shift recovery', f:'Sleep is the only priority right now — everything else waits',  w:"Your body has been under sustained stress. Recovery isn't laziness."},
+  aftershift_sleep_now:{e:'😴',b:'Wind down to sleep',  f:'Get into sleep conditions as fast as possible',                 w:"Your window for falling asleep is now. Protect it."},
+  aftershift_wired:    {e:'⚡',b:'Wired after shift',   f:'Don\'t reach for your phone — that\'s the one thing that extends this', w:"The wired feeling after a night shift is cortisol, not actual energy. It passes faster without screens."},
+  flip_mild:           {e:'🌀',b:'Mild disorientation', f:'Ground yourself in the basics before anything else',            w:"Shift work disorientation is real and physical. You're not failing — your circadian rhythm is just confused."},
+  flip_anchor:         {e:'⚓',b:'Find your anchor',    f:'Do your one anchor thing first — everything else follows',      w:"Small physical anchors re-establish your sense of existing in a body. Start there."},
+  flip_nothing:        {e:'🤍',b:'Total blank',         f:'Don\'t try to be productive — just exist for 20 minutes first', w:"When nothing helps, the smallest physical thing is still a step. Open a window. That's enough to start."},
+  flip_anxiety:        {e:'🌊',b:'Anxiety building',    f:'Ground yourself physically before the anxiety takes hold',      w:"Anxiety after shift work often comes from accumulated sleep debt plus cortisol. Your nervous system needs regulating, not problem-solving."},
+  overwhelmed_triage:  {e:'🗂️',b:'Triage mode',        f:'Sort first, do second — 10 minutes of sorting unlocks everything', w:"When everything feels equal, nothing happens. A quick sort breaks the paralysis."},
+  overwhelmed_empty:   {e:'💛',b:'Empty mode',          f:'Don\'t fight the emptiness — move through it with tiny steps',  w:"Emptiness isn't laziness. It's often your nervous system in shutdown mode. Small physical actions are the way out."},
+  overwhelmed_scroll:  {e:'📵',b:'Loop break',          f:'The phone goes in another room — that\'s the whole first task',  w:"Doomscrolling keeps your nervous system activated while also making you feel worse. Breaking the loop is the work."},
+  overwhelmed_restore: {e:'💛',b:'Restore first',       f:'Step away from tasks entirely — restoration is the work today', w:"You can't pour from an empty cup. Rest without guilt is a skill."},
+  midday_keep_going:   {e:'🔥',b:'Afternoon push',      f:'Protect the next 90 minutes with one clear task',              w:"You've got momentum. Guard it."},
+  midday_triage_afternoon:{e:'✂️',b:'Afternoon triage', f:'Cut the list down to 2 — quality beats quantity',              w:"Low energy means low capacity. Accept it and work with it."},
+  midday_refocus:      {e:'🔁',b:'Refocus',             f:'Change your environment before you try to change your focus',   w:"Distractions are environmental. A small reset works."},
+  midday_reset:        {e:'🔄',b:'Soft reset',          f:'Move first, then come back with a smaller first step',          w:"\"Can't start\" usually means the task feels too big, not that you're broken."},
+  evening_good_shutdown:{e:'✅',b:'Good shutdown',      f:'Write it down and close it properly',                          w:"A proper shutdown ritual tells your brain it's safe to stop working."},
+  evening_decompress:  {e:'🌊',b:'Decompress',          f:'Move your body before you try to rest',                        w:"Wired-but-tired is real. Physical discharge comes before mental rest."},
+  evening_hard_day:    {e:'🤍',b:'Hard day',            f:'Rest is the only task tonight — full stop',                    w:"Hard days are real. You don't owe anyone productivity today."}
+};
+
+const RES_TIPS = {
+  morning_nosleep:"<strong>No sleep + ADHD:</strong> your impulse control and emotional regulation are both running low. Be extra gentle with yourself today and avoid high-stakes decisions if you can.",
+  morning_fuel_first:"<strong>Quick food hack:</strong> keep something zero-effort available — a banana, crackers, anything — so this step never requires energy you don't have.",
+  morning_focused:"<strong>Peak window:</strong> most people have 2-4 hours of peak cognitive function after waking. Use it on hard things, not admin.",
+  morning_settle_first:"<strong>Brain dump rule:</strong> write without editing. Messy is fine. The goal is to empty the buffer.",
+  aftershift_long:"<strong>Shift work recovery:</strong> your body needs roughly one day of recovery for every night of disrupted sleep. Don't fight it.",
+  aftershift_sleep_now:"<strong>Light is the enemy:</strong> even small amounts of light signal your brain to stay awake. Blackout is worth the effort.",
+  aftershift_wired:"<strong>Why you feel wired:</strong> night shifts keep cortisol elevated. It drops naturally — but screens, food, and bright light all reset the clock and delay the drop.",
+  flip_mild:"<strong>Shift work and ADHD:</strong> the combination is genuinely hard. Your circadian rhythm is already irregular; night shifts disrupt it further. This isn't a character flaw.",
+  flip_anchor:"<strong>Anchors work because:</strong> physical sensations bypass the parts of your brain that are confused about time. Coffee, music, sunlight — all of these signal 'now' to your nervous system.",
+  flip_nothing:"<strong>When nothing works:</strong> the goal isn't to fix the flip day. It's to get through it without making it worse. That's a win.",
+  flip_anxiety:"<strong>Anxiety after sleep deprivation:</strong> it's almost always physiological first. Address the body before you try to solve anything in your head.",
+  overwhelmed_triage:"<strong>Most things aren't urgent.</strong> If nothing happened if you skipped it today — it can wait.",
+  overwhelmed_empty:"<strong>ADHD + emptiness:</strong> this often looks like laziness but it's closer to nervous system shutdown. Movement is the most reliable way out.",
+  overwhelmed_scroll:"<strong>Why scrolling makes it worse:</strong> it keeps you stimulated enough that you can't rest, but not stimulated enough to start anything. It's the worst of both states.",
+  overwhelmed_restore:"<strong>Rest is not a reward</strong> for finishing work. It's a prerequisite for doing it.",
+  midday_keep_going:"<strong>2–4pm:</strong> energy naturally dips here. If you can protect one focused block before it hits, you're set.",
+  midday_triage_afternoon:"<strong>Protect your energy.</strong> Crossing things off your list counts as a valid use of the afternoon.",
+  midday_refocus:"<strong>Environment design</strong> beats willpower every time. Make the distraction physically harder to reach.",
+  midday_reset:"<strong>\"Can't start\"</strong> almost always means the task is too big in your head. Make the first step embarrassingly small.",
+  evening_good_shutdown:"<strong>Write tomorrow's tasks tonight</strong> — your brain stops trying to hold them when they're written down.",
+  evening_decompress:"<strong>\"Wired but tired\" with ADHD</strong> is extremely common. Your nervous system needs discharge before it can rest.",
+  evening_hard_day:"<strong>You showed up today.</strong> That counts, even if it doesn't feel like it."
+};
+
+// ─────────────────────────────────────
+// STATE & STORAGE
+// ─────────────────────────────────────
+let mode=null, nodeId=null, hist=[], steps=0, total=0, curResult=null;
+let editingOutcome=null;
+
+const SK='df_s_v6', SK2='df_cfg_v6', SK3='df_tasks_v6';
+const getSess   = ()=>{try{return JSON.parse(localStorage.getItem(SK)||'[]')}catch{return[]}};
+const saveSess  = d=>{const s=getSess();s.push({...d,ts:Date.now()});localStorage.setItem(SK,JSON.stringify(s.filter(x=>Date.now()-x.ts<90*864e5)))};
+const getCfg    = ()=>{try{return JSON.parse(localStorage.getItem(SK2)||'{}')}catch{return{}}};
+const saveCfg   = s=>localStorage.setItem(SK2,JSON.stringify(s));
+const getCatId  = ()=>{const c=getCfg();return c.catId!==undefined?c.catId:null};
+const isSetup   = ()=>getCfg().setup===true;
+
+// Get tasks for a result key — custom if set, otherwise default
+const getTasks  = rk=>{
+  try{
+    const custom=JSON.parse(localStorage.getItem(SK3)||'{}');
+    if(custom[rk]&&custom[rk].length>0) return custom[rk];
+  }catch{}
+  return DEFAULT_TASKS[rk]||[];
+};
+const setTasks  = (rk,tasks)=>{
+  try{
+    const custom=JSON.parse(localStorage.getItem(SK3)||'{}');
+    custom[rk]=tasks;
+    localStorage.setItem(SK3,JSON.stringify(custom));
+  }catch{}
+};
+const resetTasks = rk=>{
+  try{
+    const custom=JSON.parse(localStorage.getItem(SK3)||'{}');
+    delete custom[rk];
+    localStorage.setItem(SK3,JSON.stringify(custom));
+  }catch{}
+};
+
+// ─────────────────────────────────────
+// LIFEUP URL
+// ─────────────────────────────────────
+function makeUrl(taskName){
+  const catId=getCatId();
+  const eod=new Date(); eod.setHours(23,59,59,0);
+  let p=`todo=${encodeURIComponent(taskName)}&notes=${encodeURIComponent('Added by daily.flow')}&coin=5&exp=10&deadline=${eod.getTime()}`;
+  if(catId!==null) p+=`&category=${catId}`;
+  return `intent://api/add_task?${p}#Intent;scheme=lifeup;package=net.sarasarasa.lifeup;end`;
+}
+
+// ─────────────────────────────────────
+// INIT
+// ─────────────────────────────────────
+function init(){
+  const h=new Date().getHours();
+  const greets=['Hey.','Good morning.','Good afternoon.','Good evening.'];
+  document.getElementById('greetTxt').textContent = h<5?'Hey.':h<12?'Good morning.':h<17?'Good afternoon.':'Good evening.';
+  const ss=getSess();
+  document.getElementById('streakN').textContent=calcStreak(ss);
+  document.getElementById('totalN').textContent=ss.length;
+  document.getElementById('setupBanner').classList.toggle('hide',getCatId()!==null);
+  updateLtLbl();
+  // Show setup wizard on first use
+  if(!isSetup()){
+    setTimeout(()=>showScr('setup'),400);
+  }
+}
+init();
+
+function calcStreak(ss){
+  if(!ss.length)return 0;
+  const days=new Set(ss.map(s=>new Date(s.ts).toDateString()));
+  let streak=0,d=new Date();
+  for(let i=0;i<100;i++){
+    if(days.has(d.toDateString())){streak++;d.setDate(d.getDate()-1);}
+    else if(streak===0){d.setDate(d.getDate()-1);if(!days.has(d.toDateString()))break;}
+    else break;
+  }
+  return streak;
+}
+function updateLtLbl(){
+  const el=document.getElementById('ltLbl');if(!el)return;
+  const c=getCatId();
+  el.textContent=c===null?'default list':c===0?'All Tasks (id:0)':`list id: ${c}`;
+}
+
+// ─────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────
+function showScr(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  const el=document.getElementById('s-'+id);
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+}
+function setProg(c,t){
+  document.getElementById('PT').classList.toggle('on',t>0);
+  document.getElementById('PF').style.width=t>0?Math.min(100,(c/t)*100)+'%':'0%';
+}
+function setAc(col){document.documentElement.style.setProperty('--ac',col);}
+function goBack(){
+  if(!hist.length){goHome();return;}
+  nodeId=hist.pop();steps=Math.max(0,steps-1);
+  setProg(steps,total);renderQ(mode,nodeId);showScr('question');
+}
+function goHome(){
+  mode=nodeId=null;hist=[];steps=0;total=0;
+  setProg(0,0);setAc('#f5a623');
+  document.getElementById('backBtn').classList.add('hide');
+  init();showScr('home');
+}
+function depth(m,n,d){
+  const node=FLOWS[m].nodes[n];if(!node)return d;
+  let mx=d;for(const c of node.ch)if(c.n!=='result'){const x=depth(m,c.n,d+1);if(x>mx)mx=x;}return mx;
+}
+
+// ─────────────────────────────────────
+// FLOW
+// ─────────────────────────────────────
+function startFlow(m){
+  mode=m;hist=[];steps=0;
+  total=depth(m,FLOWS[m].start,1)+1;
+  setAc(FLOWS[m].color);
+  document.getElementById('backBtn').classList.remove('hide');
+  renderQ(m,FLOWS[m].start);showScr('question');
+}
+function renderQ(m,nId){
+  nodeId=nId;
+  const f=FLOWS[m],node=f.nodes[nId];
+  document.getElementById('qCtx').textContent=f.label;
+  document.getElementById('qDot').style.background=f.color;
+  document.getElementById('qTxt').textContent=node.q;
+  document.getElementById('qSub').textContent=node.sub;
+  setProg(steps+1,total);
+  const box=document.getElementById('choices');box.innerHTML='';
+  node.ch.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.className='cbtn'+(node.ch.length===2?(i===0?' yes':' no'):'');
+    btn.textContent=c.l;
+    btn.onclick=()=>{hist.push(nId);steps++;if(c.n==='result')showResult(c.r);else{renderQ(m,c.n);showScr('question');}};
+    box.appendChild(btn);
+  });
+}
+
+// ─────────────────────────────────────
+// RESULT
+// ─────────────────────────────────────
+function showResult(rk){
+  curResult=rk;
+  const meta=RES_META[rk]||{e:'✦',b:rk,f:'',w:''};
+  document.getElementById('rEmoji').textContent=meta.e;
+  document.getElementById('rBadge').textContent=meta.b;
+  document.getElementById('fTxt').textContent=meta.f;
+  document.getElementById('fWhy').textContent=meta.w;
+  document.getElementById('tipTxt').innerHTML=RES_TIPS[rk]||'';
+  setProg(total,total);
+  updateLtLbl();
+
+  // Store outcome key on edit button
+  document.getElementById('editTasksBtn').dataset.outcome=rk;
+
+  const tasks=getTasks(rk);
+  const list=document.getElementById('tList');list.innerHTML='';
+  tasks.forEach((task,i)=>{
+    const item=document.createElement('div');
+    item.className='titem';item.id='ti-'+i;
+    const url=makeUrl(task.n);
+    const anchor=document.createElement('a');
+    anchor.className='tadd';anchor.id='ta-'+i;
+    anchor.href=url;anchor.textContent='+ Add';
+    anchor.addEventListener('click',()=>markSent(i));
+    const chk=document.createElement('div');
+    chk.className='tchk';chk.id='tc-'+i;
+    chk.addEventListener('click',()=>toggleDone(i));
+    const left=document.createElement('div');left.className='tleft';
+    left.innerHTML=`<div class="tname">${task.n}</div><div class="ttag">${task.g}</div>`;
+    item.appendChild(chk);item.appendChild(left);item.appendChild(anchor);
+    list.appendChild(item);
+  });
+
+  saveSess({mode,resultKey:rk});
+  showScr('result');
+}
+
+function toggleDone(i){
+  const item=document.getElementById('ti-'+i);
+  item.classList.toggle('done');
+  document.getElementById('tc-'+i).textContent=item.classList.contains('done')?'✓':'';
+}
+function markSent(i){
+  setTimeout(()=>{
+    const item=document.getElementById('ti-'+i);
+    const anchor=document.getElementById('ta-'+i);
+    if(item)item.classList.add('sent');
+    if(anchor)anchor.textContent='✓ Added';
+    toast('Opened in LifeUp ⚡','ok');
+  },200);
+}
+
+// ─────────────────────────────────────
+// SETUP WIZARD
+// ─────────────────────────────────────
+const sleepTagsSelected=new Set();
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('#sleepTags .tag-chip').forEach(chip=>{
+    chip.addEventListener('click',()=>{
+      const v=chip.dataset.v;
+      if(sleepTagsSelected.has(v)){sleepTagsSelected.delete(v);chip.classList.remove('sel');}
+      else{sleepTagsSelected.add(v);chip.classList.add('sel');}
+    });
+  });
+});
+
+function wizardNext(step){
+  document.querySelectorAll('.wizard-step').forEach(s=>s.classList.remove('on'));
+  const el=document.getElementById('ws-'+step);
+  if(el)el.classList.add('on');
+}
+
+function wizardFinish(){
+  const anchors=document.getElementById('w-anchors').value.trim();
+  const blockers=document.getElementById('w-blockers').value.trim();
+  const nonneg=document.getElementById('w-nonneg').value.trim();
+  const sleepHelpers=[...sleepTagsSelected];
+
+  // Build personalised tasks based on wizard answers
+  applyWizardToTasks(anchors,blockers,nonneg,sleepHelpers);
+
+  const cfg=getCfg();
+  cfg.setup=true;
+  cfg.wizardData={anchors,blockers,nonneg,sleepHelpers};
+  saveCfg(cfg);
+
+  toast('Tasks personalised ✓','ok');
+  goHome();
+}
+
+function wizardSkip(){
+  const cfg=getCfg();cfg.setup=true;saveCfg(cfg);
+  goHome();
+}
+
+function applyWizardToTasks(anchors,blockers,nonneg,sleepHelpers){
+  // Parse free text into task arrays
+  const parseList=txt=>txt.split(/[,\n]+/).map(s=>s.trim()).filter(s=>s.length>2);
+
+  const anchorList=parseList(anchors);
+  const nonnegList=parseList(nonneg);
+  const blockerList=parseList(blockers);
+
+  // Add anchor tasks to flip/empty outcomes
+  if(anchorList.length){
+    const anchorTask={n:anchorList[0],g:'anchor'};
+    ['flip_anchor','flip_nothing','overwhelmed_empty'].forEach(rk=>{
+      const tasks=[...getTasks(rk)];
+      // Replace generic anchor task with their real one
+      const idx=tasks.findIndex(t=>t.g==='anchor');
+      if(idx>=0)tasks[idx]=anchorTask;
+      else tasks.unshift(anchorTask);
+      setTasks(rk,tasks);
+    });
+  }
+
+  // Add non-negotiables to all morning/woke-up outcomes
+  if(nonnegList.length){
+    ['morning_focused','morning_settle_first','morning_nosleep','morning_fuel_first'].forEach(rk=>{
+      const tasks=[...getTasks(rk)];
+      nonnegList.slice(0,2).forEach(item=>{
+        if(!tasks.find(t=>t.n.toLowerCase()===item.toLowerCase())){
+          tasks.push({n:item,g:'non-negotiable'});
+        }
+      });
+      setTasks(rk,tasks);
+    });
+  }
+
+  // Add "avoid X" task to bad-state outcomes
+  if(blockerList.length){
+    const avoidTask={n:`Avoid: ${blockerList[0]}`,g:'protect'};
+    ['morning_nosleep','flip_nothing','overwhelmed_empty','overwhelmed_scroll'].forEach(rk=>{
+      const tasks=[...getTasks(rk)];
+      if(!tasks.find(t=>t.g==='protect')){
+        tasks.unshift(avoidTask);
+      }
+      setTasks(rk,tasks);
+    });
+  }
+
+  // Add sleep helpers to aftershift outcomes
+  if(sleepHelpers.length){
+    const shTasks=sleepHelpers.filter(s=>s!=='nothing works').map(s=>({n:s,g:'sleep'}));
+    if(shTasks.length){
+      ['aftershift_sleep_now','aftershift_wired','aftershift_long'].forEach(rk=>{
+        const existing=getTasks(rk).filter(t=>t.g!=='sleep');
+        setTasks(rk,[...shTasks,...existing]);
+      });
+    }
+  }
+}
+
+// ─────────────────────────────────────
+// EDIT TASKS PANEL
+// ─────────────────────────────────────
+const OUTCOME_LABELS={
+  morning_nosleep:'😶 No sleep',morning_fuel_first:'🍳 Fuel first',
+  morning_focused:'🎯 Ready',morning_settle_first:'🧘 Settle first',
+  aftershift_long:'🛏️ Long shift',aftershift_sleep_now:'😴 Sleep now',aftershift_wired:'⚡ Wired',
+  flip_mild:'🌀 Mild flip',flip_anchor:'⚓ Anchor',flip_nothing:'🤍 Blank',flip_anxiety:'🌊 Anxiety',
+  overwhelmed_triage:'🗂️ Triage',overwhelmed_empty:'💛 Empty',overwhelmed_scroll:'📵 Scrolling',overwhelmed_restore:'💛 Restore',
+  midday_keep_going:'🔥 Keep going',midday_triage_afternoon:'✂️ Triage PM',midday_refocus:'🔁 Refocus',midday_reset:'🔄 Reset',
+  evening_good_shutdown:'✅ Shutdown',evening_decompress:'🌊 Decompress',evening_hard_day:'🤍 Hard day'
+};
+
+function openEditTasks(){
+  // Default to current result's outcome if coming from result screen
+  const btn=document.getElementById('editTasksBtn');
+  editingOutcome=btn.dataset.outcome||Object.keys(OUTCOME_LABELS)[0];
+  renderOutcomeTabs();
+  renderEditTaskList();
+  document.getElementById('editOvr').classList.add('on');
+  document.getElementById('editPanel').classList.add('on');
+}
+function closeEditTasks(){
+  document.getElementById('editOvr').classList.remove('on');
+  document.getElementById('editPanel').classList.remove('on');
+}
+
+function renderOutcomeTabs(){
+  const container=document.getElementById('outcomeTabs');container.innerHTML='';
+  Object.entries(OUTCOME_LABELS).forEach(([key,label])=>{
+    const tab=document.createElement('div');
+    tab.className='otab'+(key===editingOutcome?' active':'');
+    tab.textContent=label;
+    tab.onclick=()=>{editingOutcome=key;renderOutcomeTabs();renderEditTaskList();};
+    container.appendChild(tab);
+  });
+}
+
+function renderEditTaskList(){
+  const tasks=getTasks(editingOutcome);
+  const container=document.getElementById('editTaskList');container.innerHTML='';
+  tasks.forEach((task,i)=>{
+    const row=document.createElement('div');row.className='edit-task-row';
+    const inp=document.createElement('input');
+    inp.className='edit-task-input';inp.type='text';inp.value=task.n;
+    inp.placeholder='Task description...';inp.id='et-'+i;
+    const del=document.createElement('button');
+    del.className='edit-del-btn';del.textContent='×';
+    del.onclick=()=>{
+      const t=[...getTasks(editingOutcome)];t.splice(i,1);setTasks(editingOutcome,t);renderEditTaskList();
+    };
+    row.appendChild(inp);row.appendChild(del);
+    container.appendChild(row);
+  });
+}
+
+function addEditTask(){
+  const tasks=[...getTasks(editingOutcome)];
+  tasks.push({n:'',g:'custom'});
+  setTasks(editingOutcome,tasks);
+  renderEditTaskList();
+  // Focus the new input
+  setTimeout(()=>{
+    const inputs=document.querySelectorAll('.edit-task-input');
+    if(inputs.length)inputs[inputs.length-1].focus();
+  },50);
+}
+
+function saveEditedTasks(){
+  const inputs=document.querySelectorAll('.edit-task-input');
+  const tasks=[];
+  inputs.forEach((inp,i)=>{
+    const val=inp.value.trim();
+    if(val) tasks.push({n:val,g:'custom'});
+  });
+  setTasks(editingOutcome,tasks);
+  toast('Tasks saved ✓','ok');
+  closeEditTasks();
+  // Refresh result screen if we're on it
+  if(curResult===editingOutcome) showResult(curResult);
+}
+
+function resetOutcomeTasks(){
+  if(confirm('Reset tasks for this situation back to defaults?')){
+    resetTasks(editingOutcome);
+    renderEditTaskList();
+    toast('Reset to defaults','ok');
+  }
+}
+
+// ─────────────────────────────────────
+// LIST PANEL
+// ─────────────────────────────────────
+function openList(){
+  const c=getCatId();
+  if(c!==null)document.getElementById('catInput').value=c;
+  updateTestLink();
+  document.getElementById('listOvr').classList.add('on');
+  document.getElementById('listPanel').classList.add('on');
+}
+function closeList(){
+  document.getElementById('listOvr').classList.remove('on');
+  document.getElementById('listPanel').classList.remove('on');
+}
+function saveList(){
+  const val=document.getElementById('catInput').value.trim();
+  const cfg=getCfg();
+  if(val==='')delete cfg.catId;else cfg.catId=parseInt(val,10);
+  saveCfg(cfg);updateLtLbl();updateTestLink();
+  document.getElementById('setupBanner').classList.add('hide');
+  toast('List saved ✓','ok');closeList();
+}
+function updateTestLink(){
+  const url=makeUrl('daily.flow test task ✓');
+  const el=document.getElementById('testLink');if(el)el.href=url;
+
+}
+
+// ─────────────────────────────────────
+// STATS
+// ─────────────────────────────────────
+function openStats(){buildStats();document.getElementById('statsOvr').classList.add('on');document.getElementById('statsPanel').classList.add('on');}
+function closeStats(){document.getElementById('statsOvr').classList.remove('on');document.getElementById('statsPanel').classList.remove('on');}
+function buildStats(){
+  const ss=getSess();
+  const dc={};ss.forEach(s=>{const d=new Date(s.ts).toDateString();dc[d]=(dc[d]||0)+1;});
+  const hm=document.getElementById('hmap');hm.innerHTML='';
+  const today=new Date();
+  for(let i=27;i>=0;i--){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const c=dc[d.toDateString()]||0;
+    const cell=document.createElement('div');
+    cell.className='hcell'+(c===0?'':c===1?' l1':c===2?' l2':' l3');
+    cell.title=`${d.toLocaleDateString()}: ${c} session${c!==1?'s':''}`;
+    hm.appendChild(cell);
+  }
+  const mc={};ss.forEach(s=>{mc[s.mode]=(mc[s.mode]||0)+1;});
+  const em={morning:'🌅',aftershift:'🌙',flip:'🌀',overwhelmed:'😶',midday:'☀️',evening:'🌆'};
+  const mb=document.getElementById('mbreak');mb.innerHTML='';
+  Object.entries(mc).sort((a,b)=>b[1]-a[1]).forEach(([m,c])=>{
+    const chip=document.createElement('div');chip.className='mchip';
+    chip.textContent=`${em[m]||'•'} ${m} × ${c}`;mb.appendChild(chip);
+  });
+  if(!mb.children.length)mb.innerHTML='<span style="color:var(--mu);font-size:13px">Complete a flow to start tracking</span>';
+  const pr=document.getElementById('patRows');pr.innerHTML='';
+  const streak=calcStreak(ss);
+  const thisWeek=ss.filter(s=>Date.now()-s.ts<7*864e5).length;
+  const topMode=Object.entries(mc).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+  [{l:'Total sessions',v:ss.length},{l:'This week',v:thisWeek},{l:'Current streak',v:`${streak} day${streak!==1?'s':''}`},{l:'Most used mode',v:topMode}]
+    .forEach(({l,v})=>{
+      const row=document.createElement('div');row.className='prow';
+      row.innerHTML=`<span class="plbl">${l}</span><span class="pval">${v}</span>`;
+      pr.appendChild(row);
+    });
+}
+
+// ─────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────
+let _tt;
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast '+type+' on';
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on'),2800);
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('daily.flow: service worker registered'))
+      .catch(err => console.log('daily.flow: sw registration failed', err));
+  });
+}
+</script>
+</body>
+</html>
